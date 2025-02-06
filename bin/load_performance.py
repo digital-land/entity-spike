@@ -6,16 +6,19 @@ import sys
 import logging
 import sqlite3
 import pandas as pd
+import os
 
 indexes = {
     "provision_summary": ["organisation", "organisation_name", "dataset"]
 }
 
+PARQUET_PERFORMANCE_DIR = os.getenv("PARQUET_PERFORMANCE_DIR")
+
 
 def fetch_provision_data(db_path):
     conn = sqlite3.connect(db_path)
     query = """
-        select p.organisation, o.name as organisation_name, p.cohort, p.dataset from provision p
+        select p.organisation, o.name as organisation_name, p.cohort, p.dataset,p.provision_reason from provision p
         inner join organisation o on o.organisation = p.organisation
         order by p.organisation
     """
@@ -155,7 +158,7 @@ def create_performance_tables(merged_data, cf_merged_data, endpoint_summary_data
         endpoint_summary_table_name, conn, if_exists='replace', index=False)
 
     # Filter out endpoints with an end date as we don't want to count them in provision summary
-    final_result = merged_data.groupby(['organisation', 'organisation_name', 'dataset']).agg(
+    final_result = merged_data.groupby(['organisation', 'organisation_name', 'dataset', 'provision_reason']).agg(
         active_endpoint_count=pd.NamedAgg(
             column='endpoint',
             aggfunc=lambda x: x[(merged_data.loc[x.index,
@@ -225,6 +228,7 @@ def create_performance_tables(merged_data, cf_merged_data, endpoint_summary_data
     })
 
     provision_table_name = "provision_summary"
+    final_result.to_parquet(os.path.join(PARQUET_PERFORMANCE_DIR,"provision_summary.parquet"), engine="pyarrow")
     final_result.to_sql(provision_table_name, conn,
                         if_exists='replace', index=False)
     conn.close()

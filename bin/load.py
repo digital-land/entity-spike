@@ -11,6 +11,8 @@ import sqlite3
 import pandas as pd
 from digital_land.package.sqlite import SqlitePackage
 
+PARQUET_SPECIFICATION_DIR = os.getenv("PARQUET_SPECIFICATION_DIR")
+
 
 tables = {
     "organisation": "var/cache",
@@ -79,6 +81,11 @@ indexes = {
 }
 
 
+def create_parquet_from_table(df, name, output_dir):
+    parquet_file_path = os.path.join(output_dir, f"{name}.parquet")
+    df.to_parquet(parquet_file_path, engine="pyarrow")
+
+
 if __name__ == "__main__":
     level = logging.INFO
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
@@ -88,6 +95,8 @@ if __name__ == "__main__":
 
     conn = sqlite3.connect(path)
 
+    specification_df = pd.read_sql_query("SELECT * FROM specification", conn)
+    create_parquet_from_table(specification_df, "specification", PARQUET_SPECIFICATION_DIR)
     operational_issue_log = pd.read_csv("performance/operational_issue/operational-issue.csv")
     operational_issue_log.to_sql("operational_issue", conn, if_exists="replace", index=False)
     
@@ -197,3 +206,4 @@ if __name__ == "__main__":
         where t1.rn = 1              
     """)
     conn.close()
+

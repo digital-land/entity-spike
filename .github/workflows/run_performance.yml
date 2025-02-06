@@ -63,7 +63,13 @@ jobs:
         HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.DEVELOPMENT_DATA_S3_BUCKET}}
       run: make save-dataset
 
-      # Staging
+    - name: Save Parquet files to Development S3
+      env:
+        COLLECTION_DATASET_BUCKET_NAME: ${{secrets.DEVELOPMENT_DATA_S3_BUCKET}}
+        HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.DEVELOPMENT_DATA_S3_BUCKET}}
+      run: make save-tables-to-parquet
+
+   # Staging
     - name: Configure Staging AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
@@ -76,6 +82,12 @@ jobs:
         COLLECTION_DATASET_BUCKET_NAME: ${{secrets.STAGING_DATA_S3_BUCKET}}
         HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.STAGING_DATA_S3_BUCKET}}
       run: make save-dataset
+
+    - name: Save Parquet files to Staging S3
+      env:
+        COLLECTION_DATASET_BUCKET_NAME: ${{secrets.STAGING_DATA_S3_BUCKET}}
+        HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.STAGING_DATA_S3_BUCKET}}
+      run: make save-tables-to-parquet
     
     # Production
     - name: Configure Production AWS Credentials
@@ -90,3 +102,10 @@ jobs:
         COLLECTION_DATASET_BUCKET_NAME: ${{secrets.PRODUCTION_DATA_S3_BUCKET}}
         HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.PRODUCTION_DATA_S3_BUCKET}}
       run: make save-dataset
+
+    - name: Save Parquet files to Prod S3
+      env:
+        COLLECTION_DATASET_BUCKET_NAME: ${{secrets.PRODUCTION_DATA_S3_BUCKET}}
+        HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.PRODUCTION_DATA_S3_BUCKET}}
+      run: make save-tables-to-parquet
+

@@ -7,4 +7,5 @@ chardet
 PyPDF2
 pandas
 tqdm
+pyarrow
 -e git+https://github.com/digital-land/digital-land-python.git#egg=digital-land
